@@ -11,6 +11,13 @@ spring:
     url: jdbc:mysql://localhost:3306/campuseye?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 88888888
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+file:
+  upload-path: /Users/luo/Java/github/CampusEye/frontend/src/assets/images
 
 mybatis-plus:
   configuration:
@@ -18,5 +25,4 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-      id-type: assign_id
-
+      id-type: auto
