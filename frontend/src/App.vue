@@ -1,28 +1,72 @@
 <template>
   <div class="app">
     <transition name="fade" mode="out-in">
-      <section v-if="view==='auth'" key="auth" class="auth">
-        <div class="card">
-          <h1>CampusEye</h1>
-          <p>校园地图与建筑导览系统</p>
-          <div class="tabs">
+      <section v-if="view==='auth'" key="auth" class="auth-google">
+        <div class="auth-shell">
+          <div class="auth-brand">
+            <div class="auth-logo">C</div>
+            <div>
+              <h1>CampusEye</h1>
+              <p>校园地图与建筑导览系统</p>
+            </div>
+          </div>
+
+          <div class="auth-switch">
             <button :class="{on:tab==='login'}" @click="tab='login'">登录</button>
             <button :class="{on:tab==='register'}" @click="tab='register'">注册</button>
           </div>
-          <form v-if="tab==='login'" class="form" @submit.prevent="doLogin">
-            <input v-model.trim="loginForm.username" placeholder="用户名" required />
-            <input v-model.trim="loginForm.password" type="password" placeholder="密码" required />
-            <div class="role">
+
+          <form v-if="tab==='login'" class="auth-form" @submit.prevent="doLogin">
+            <label class="auth-field">
+              <span>用户名</span>
+              <div class="auth-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+                <input v-model.trim="loginForm.username" placeholder="请输入用户名" required />
+              </div>
+            </label>
+
+            <label class="auth-field">
+              <span>密码</span>
+              <div class="auth-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                <input v-model.trim="loginForm.password" type="password" placeholder="请输入密码" required />
+              </div>
+            </label>
+
+            <div class="auth-role">
               <button type="button" :class="{on:loginForm.role==='user'}" @click="loginForm.role='user'">普通用户</button>
               <button type="button" :class="{on:loginForm.role==='admin'}" @click="loginForm.role='admin'">管理员</button>
             </div>
-            <button class="primary" :disabled="loading.auth">{{loading.auth?'登录中...':'登录'}}</button>
+
+            <button class="auth-submit" :disabled="loading.auth">{{loading.auth?'登录中...':'登录'}}</button>
           </form>
-          <form v-else class="form" @submit.prevent="doRegister">
-            <input v-model.trim="registerForm.username" placeholder="用户名" required />
-            <input v-model.trim="registerForm.password" type="password" placeholder="密码" required />
-            <input v-model.trim="registerForm.confirmPassword" type="password" placeholder="确认密码" required />
-            <button class="primary" :disabled="loading.auth">{{loading.auth?'注册中...':'注册'}}</button>
+
+          <form v-else class="auth-form" @submit.prevent="doRegister">
+            <label class="auth-field">
+              <span>用户名</span>
+              <div class="auth-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+                <input v-model.trim="registerForm.username" placeholder="请输入用户名" required />
+              </div>
+            </label>
+
+            <label class="auth-field">
+              <span>密码</span>
+              <div class="auth-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                <input v-model.trim="registerForm.password" type="password" placeholder="请输入密码" required />
+              </div>
+            </label>
+
+            <label class="auth-field">
+              <span>确认密码</span>
+              <div class="auth-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>
+                <input v-model.trim="registerForm.confirmPassword" type="password" placeholder="请再次输入密码" required />
+              </div>
+            </label>
+
+            <button class="auth-submit" :disabled="loading.auth">{{loading.auth?'注册中...':'注册'}}</button>
           </form>
         </div>
       </section>

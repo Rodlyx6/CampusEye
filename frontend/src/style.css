@@ -6,13 +6,89 @@
   * { box-sizing: border-box; }
   html, body, #app { height: 100%; }
   body {
-    @apply m-0 bg-slate-100 text-slate-800;
-    font-family: 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+    @apply m-0 bg-[#eef1ee] text-slate-800;
+    font-family: 'Google Sans', 'Roboto', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
   }
 }
 
 @layer components {
   .app { @apply min-h-screen; }
+
+  .auth-google {
+    @apply grid min-h-screen place-items-center bg-[#e7ece8] p-4;
+  }
+
+  .auth-shell {
+    @apply w-full max-w-[540px] rounded-[28px] border border-[#cfd7d1] bg-[#f9faf9] px-10 py-9 shadow-[0_4px_24px_rgba(34,53,39,0.10)];
+  }
+
+  .auth-brand {
+    @apply mb-6 flex items-center gap-4;
+  }
+
+  .auth-logo {
+    @apply grid h-12 w-12 place-items-center rounded-2xl bg-[#3f6b53] text-2xl font-bold text-white;
+  }
+
+  .auth-brand h1 {
+    @apply m-0 text-[54px] font-extrabold tracking-tight text-[#1f2b23];
+  }
+
+  .auth-brand p {
+    @apply m-0 text-[18px] font-medium text-[#66756b];
+  }
+
+  .auth-switch {
+    @apply mb-6 grid grid-cols-2 rounded-2xl bg-[#e9ede9] p-1;
+  }
+
+  .auth-switch button {
+    @apply h-12 rounded-xl border-0 bg-transparent text-[20px] font-bold text-[#3f4d44] transition;
+  }
+
+  .auth-switch button.on {
+    @apply bg-[#fefefe] text-[#2f6d4a] shadow-[0_1px_5px_rgba(34,53,39,0.12)];
+  }
+
+  .auth-form {
+    @apply grid gap-4;
+  }
+
+  .auth-field {
+    @apply grid gap-1;
+  }
+
+  .auth-field span {
+    @apply text-[13px] font-semibold text-[#66756b];
+  }
+
+  .auth-input {
+    @apply flex h-14 items-center gap-3 rounded-3xl border border-[#d5ddd7] bg-[#f1f4f1] px-4 text-[#7b8a80] transition focus-within:border-[#4b7b5e] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#4b7b5e]/10;
+  }
+
+  .auth-input svg {
+    @apply h-5 w-5 flex-shrink-0;
+  }
+
+  .auth-input input {
+    @apply h-full w-full border-0 bg-transparent px-0 text-[16px] font-normal text-[#1f2b23] outline-none placeholder:text-[#98a59d];
+  }
+
+  .auth-role {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  .auth-role button {
+    @apply h-12 rounded-2xl border border-[#cfd7d1] bg-[#edf1ee] text-[16px] font-semibold text-[#3f4d44] transition hover:bg-[#e3e9e4];
+  }
+
+  .auth-role button.on {
+    @apply border-[#4b7b5e] bg-[#e7f0ea] text-[#2f6d4a];
+  }
+
+  .auth-submit {
+    @apply mt-1 h-12 rounded-2xl border-0 bg-[#3f6b53] text-[22px] font-semibold text-white transition hover:bg-[#365c47] disabled:cursor-not-allowed disabled:opacity-60;
+  }
   .auth { @apply grid min-h-screen place-items-center bg-gradient-to-br from-indigo-100 via-slate-100 to-blue-50 p-4; }
   .card { @apply w-full max-w-md rounded-2xl bg-white/95 p-6 shadow-xl; animation: rise .45s ease; }
   .card h1 { @apply m-0 text-3xl font-bold; }
@@ -198,6 +274,12 @@
 }
 
 @media (max-width: 760px) {
+  .auth-shell { @apply px-6 py-6; }
+  .auth-brand h1 { @apply text-[42px]; }
+  .auth-brand p { @apply text-[15px]; }
+  .auth-input input { @apply text-[15px]; }
+  .auth-submit { @apply text-[19px]; }
+
   .google-topbar { @apply px-4 gap-2; }
   .brand { @apply w-auto; }
   .brand h2 { @apply hidden; }
