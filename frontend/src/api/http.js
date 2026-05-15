@@ -34,3 +34,19 @@ export const uploadFilesBatch = (files) => {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 }
+
+// 评论相关
+export const getComments = (buildingId) => http.get(`/comment/list/${buildingId}`)
+export const addComment = (payload) => http.post('/comment/add', payload)
+export const deleteComment = (id) => http.delete(`/comment/delete/${id}`)
+
+// 收藏相关
+export const toggleFavorite = (buildingId) => http.post(`/favorite/toggle/${buildingId}`)
+export const getFavoriteStatus = (buildingId) => http.get(`/favorite/status/${buildingId}`)
+export const getMyFavoriteIds = () => http.get('/favorite/my')
+
+// 用户管理
+export const getUserList = () => http.get('/user/list')
+export const adminUpdateUser = (payload) => http.post('/user/admin/update', payload)
+export const adminDeleteUser = (id) => http.delete(`/user/admin/delete/${id}`)
+export const updateProfile = (payload) => http.post('/user/updateProfile', payload)

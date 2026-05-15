@@ -6,23 +6,28 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("sys_user")
-public class SysUser {
+@TableName("comment")
+public class Comment {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String username;
+    private Long buildingId;
 
-    private String password;
+    private Long userId;
 
-    private String role;
-
-    private String avatar;
+    private String content;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    // 冗余字段或关联查询字段，通常在DTO中，这里为了方便直接放在实体
+    @TableField(exist = false)
+    private String username;
+
+    @TableField(exist = false)
+    private String avatar;
 }

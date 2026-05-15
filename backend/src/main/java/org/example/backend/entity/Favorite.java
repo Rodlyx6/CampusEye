@@ -6,23 +6,16 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("sys_user")
-public class SysUser {
+@TableName("favorite")
+public class Favorite {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String username;
+    private Long userId;
 
-    private String password;
-
-    private String role;
-
-    private String avatar;
+    private Long buildingId;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
 }

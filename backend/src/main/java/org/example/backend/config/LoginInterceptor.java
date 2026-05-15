@@ -38,7 +38,10 @@ public class LoginInterceptor implements HandlerInterceptor {
                 || uri.contains("/building-image/update")
                 || uri.contains("/building-image/delete")
                 || uri.contains("/file/upload")
-                || uri.contains("/file/uploadBatch");
+                || uri.contains("/file/uploadBatch")
+                || uri.contains("/user/list")
+                || uri.contains("/user/admin/update")
+                || uri.contains("/user/admin/delete");
 
         if (isAdminApi) {
             SysUser user = (SysUser) session.getAttribute("currentUser");
