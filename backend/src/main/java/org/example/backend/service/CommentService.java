@@ -6,5 +6,6 @@ import org.example.backend.entity.Comment;
 import java.util.List;
 
 public interface CommentService extends IService<Comment> {
-    List<Comment> getCommentsByBuildingId(Long buildingId);
+    List<Comment> getCommentsByBuildingId(Long buildingId, Long currentUserId);
+    boolean toggleLike(Long commentId, Long userId);
 }

@@ -18,8 +18,20 @@ public class BuildingController {
     private final BuildingImageService buildingImageService;
 
     @GetMapping("/list")
-    public Result<List<Building>> list() {
+    public Result<List<Building>> list(@RequestParam(required = false) String category) {
+        if (category != null && !category.isEmpty()) {
+            return Result.success(buildingService.lambdaQuery().eq(Building::getCategory, category).list());
+        }
         return Result.success(buildingService.list());
+    }
+
+    @GetMapping("/categories")
+    public Result<List<String>> categories() {
+        return Result.success(buildingService.list().stream()
+                .map(Building::getCategory)
+                .filter(c -> c != null && !c.isEmpty())
+                .distinct()
+                .toList());
     }
 
     @GetMapping("/detail/{id}")

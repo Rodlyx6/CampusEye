@@ -11,8 +11,9 @@ export const login = (payload) => http.post('/auth/login', payload)
 export const currentUser = () => http.get('/auth/currentUser')
 export const logout = () => http.post('/auth/logout')
 
-export const getBuildingList = () => http.get('/building/list')
+export const getBuildingList = (category) => http.get('/building/list', { params: { category } })
 export const getBuildingDetail = (id) => http.get(`/building/detail/${id}`)
+export const getCategories = () => http.get('/building/categories')
 export const updateBuilding = (payload) => http.put('/building/update', payload)
 
 export const getBuildingImages = (buildingId) => http.get(`/building-image/listByBuildingId/${buildingId}`)
@@ -39,6 +40,7 @@ export const uploadFilesBatch = (files) => {
 export const getComments = (buildingId) => http.get(`/comment/list/${buildingId}`)
 export const addComment = (payload) => http.post('/comment/add', payload)
 export const deleteComment = (id) => http.delete(`/comment/delete/${id}`)
+export const likeComment = (id) => http.post(`/comment/like/${id}`)
 
 // 收藏相关
 export const toggleFavorite = (buildingId) => http.post(`/favorite/toggle/${buildingId}`)

@@ -98,6 +98,14 @@
   .tabs button.on { @apply bg-white text-blue-600 shadow; }
 
   .form { @apply grid gap-2; }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
   .form input,.form textarea,.tools input,.tools select { @apply h-10 w-full rounded-xl border border-slate-300 bg-white px-3 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-200; }
   .form textarea { @apply h-auto py-3; }
 

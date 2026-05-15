@@ -96,9 +96,33 @@
             <h2>龙岩学院校园导览系统</h2>
           </div>
           <div class="search-box">
-            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input v-model.trim="keyword" placeholder="在校园中搜索建筑、地标..." />
-            <div class="search-stats" v-if="keyword || showFavoritesOnly">{{filtered.length}} 结果</div>
+            <!-- 分类下拉触发器 -->
+            <div class="relative flex items-center h-full">
+              <button class="flex items-center gap-2 h-full px-4 border-r border-slate-100 text-slate-600 hover:bg-slate-50 transition min-w-[110px]" @click.stop="showCatDropdown = !showCatDropdown">
+                <span class="text-lg">{{selectedCategory ? catEmoji(selectedCategory) : '🏰'}}</span>
+                <span class="text-sm font-medium truncate max-w-[60px]">{{selectedCategory || '全部'}}</span>
+                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': showCatDropdown }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              
+              <!-- 分类下拉菜单 -->
+              <transition name="fade">
+                <div v-if="showCatDropdown" class="absolute top-full left-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-[100]" @click.stop>
+                  <button class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors" :class="!selectedCategory ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-50'" @click="selectedCategory=''; showCatDropdown=false">
+                    <span>🏰</span> 全部建筑
+                  </button>
+                  <div class="h-px bg-slate-100 my-1 mx-2"></div>
+                  <div class="max-h-64 overflow-y-auto no-scrollbar">
+                    <button v-for="cat in categories" :key="cat" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors" :class="selectedCategory===cat ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-50'" @click="selectedCategory=cat; showCatDropdown=false">
+                      <span>{{catEmoji(cat)}}</span> {{cat}}
+                    </button>
+                  </div>
+                </div>
+              </transition>
+            </div>
+
+            <svg class="search-icon ml-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input v-model.trim="keyword" placeholder="在校园中搜索建筑、地标..." @click="showCatDropdown=false" />
+            <div class="search-stats" v-if="keyword || showFavoritesOnly || selectedCategory">{{filtered.length}} 结果</div>
             <button class="ml-2 p-1.5 rounded-lg transition" :class="showFavoritesOnly ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:bg-slate-100'" @click="showFavoritesOnly = !showFavoritesOnly" title="我的收藏">
               <svg class="w-5 h-5" :fill="showFavoritesOnly ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
@@ -117,7 +141,7 @@
           </div>
         </header>
         <main class="main">
-          <section class="map-wrap">
+          <section class="map-wrap relative">
             <div class="map">
               <img :src="mapUrl" alt="main map" />
               <button v-for="(b,index) in filtered" :key="b.id" class="marker hover-name" :class="{spread:markerSpread}" :style="markerStyle(b,index)" @click="openDetail(b.id)">
@@ -185,26 +209,67 @@
                     </div>
 
                     <div v-if="detailTab==='comments'" class="space-y-4">
-                      <div class="flex gap-2 mb-6">
-                        <input v-model="commentInput" class="flex-1 h-10 px-4 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-slate-400" placeholder="写下你的评论..." @keyup.enter="doAddComment" />
-                        <button class="h-10 px-4 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition" @click="doAddComment">发表</button>
+                      <div class="mb-6">
+                        <div v-if="replyTo" class="flex items-center justify-between bg-slate-100 px-4 py-2 rounded-t-lg border-x border-t border-slate-200">
+                          <span class="text-xs text-slate-500">回复 @{{replyTo.username}}</span>
+                          <button class="text-slate-400 hover:text-slate-600" @click="replyTo=null">✕</button>
+                        </div>
+                        <div class="flex gap-2">
+                          <input v-model="commentInput" :class="replyTo ? 'rounded-b-lg rounded-tl-none' : 'rounded-lg'" class="flex-1 h-10 px-4 border border-slate-200 text-sm focus:outline-none focus:border-slate-400" :placeholder="replyTo ? '写下你的回复...' : '写下你的评论...'" @keyup.enter="doAddComment" />
+                          <button class="h-10 px-4 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition" @click="doAddComment">发表</button>
+                        </div>
                       </div>
 
-                      <div v-for="c in comments" :key="c.id" class="p-4 rounded-xl bg-slate-50 relative group">
-                        <div class="flex items-center gap-3 mb-2">
-                          <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500 overflow-hidden">
-                            <img v-if="c.avatar" :src="imgUrl(c.avatar)" class="w-full h-full object-cover" />
-                            <span v-else>{{c.username?.slice(0,1).toUpperCase()}}</span>
+                      <div class="space-y-4">
+                        <div v-for="c in comments" :key="c.id" class="p-4 rounded-xl bg-slate-50 relative group">
+                          <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500 overflow-hidden">
+                              <img v-if="c.avatar" :src="imgUrl(c.avatar)" class="w-full h-full object-cover" />
+                              <span v-else>{{c.username?.slice(0,1).toUpperCase()}}</span>
+                            </div>
+                            <div>
+                              <div class="text-sm font-bold text-slate-900">{{c.username}}</div>
+                              <div class="text-[11px] text-slate-400">{{new Date(c.createTime).toLocaleString()}}</div>
+                            </div>
                           </div>
-                          <div>
-                            <div class="text-sm font-bold text-slate-900">{{c.username}}</div>
-                            <div class="text-[11px] text-slate-400">{{new Date(c.createTime).toLocaleString()}}</div>
+                          <div class="text-sm text-slate-700 leading-relaxed">{{c.content}}</div>
+                          
+                          <!-- 评论操作 -->
+                          <div class="mt-3 flex items-center gap-4">
+                            <button class="flex items-center gap-1 text-xs transition" :class="c.isLiked ? 'text-blue-500 font-bold' : 'text-slate-400 hover:text-blue-500'" @click="doLikeComment(c)">
+                              <svg class="w-3.5 h-3.5" :fill="c.isLiked ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.708c.944 0 1.708.764 1.708 1.708 0 .887-.674 1.632-1.549 1.692l-.503.035c-.832.058-1.448.756-1.448 1.589v.21c0 .833.616 1.531 1.448 1.589l.503.035c.875.06 1.549.805 1.549 1.692 0 .944-.764 1.708-1.708 1.708H8.5c-1.105 0-2-.895-2-2V10c0-1.105.895-2 2-2h4l2-4h2v4h2l-2 2z" /></svg>
+                              <span>{{c.likes || 0}}</span>
+                            </button>
+                            <button class="text-xs text-slate-400 hover:text-blue-500 transition" @click="replyTo=c">回复</button>
+                            <button v-if="user?.role==='admin' || user?.id===c.userId" class="text-xs text-slate-400 hover:text-red-500 transition" @click="doDeleteComment(c.id)">删除</button>
+                          </div>
+
+                          <!-- 回复列表 -->
+                          <div v-if="c.replies?.length" class="mt-4 pl-4 border-l-2 border-slate-200 space-y-4">
+                            <div v-for="r in c.replies" :key="r.id" class="relative group/reply">
+                              <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 overflow-hidden">
+                                  <img v-if="r.avatar" :src="imgUrl(r.avatar)" class="w-full h-full object-cover" />
+                                  <span v-else>{{r.username?.slice(0,1).toUpperCase()}}</span>
+                                </div>
+                                <div class="text-xs font-bold text-slate-800">{{r.username}}</div>
+                                <div class="text-[10px] text-slate-400">{{new Date(r.createTime).toLocaleString()}}</div>
+                              </div>
+                              <div class="text-xs text-slate-600 leading-relaxed">
+                                <span v-if="r.replyToUser" class="text-blue-500 mr-1">@{{r.replyToUser}}</span>
+                                {{r.content}}
+                              </div>
+                              <div class="mt-2 flex items-center gap-3">
+                                <button class="flex items-center gap-1 text-[10px] transition" :class="r.isLiked ? 'text-blue-500 font-bold' : 'text-slate-400 hover:text-blue-500'" @click="doLikeComment(r)">
+                                  <svg class="w-3 h-3" :fill="r.isLiked ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.708c.944 0 1.708.764 1.708 1.708 0 .887-.674 1.632-1.549 1.692l-.503.035c-.832.058-1.448.756-1.448 1.589v.21c0 .833.616 1.531 1.448 1.589l.503.035c.875.06 1.549.805 1.549 1.692 0 .944-.764 1.708-1.708 1.708H8.5c-1.105 0-2-.895-2-2V10c0-1.105.895-2 2-2h4l2-4h2v4h2l-2 2z" /></svg>
+                                  <span>{{r.likes || 0}}</span>
+                                </button>
+                                <button class="text-[10px] text-slate-400 hover:text-blue-500 transition" @click="replyTo=c">回复</button>
+                                <button v-if="user?.role==='admin' || user?.id===r.userId" class="text-[10px] text-slate-400 hover:text-red-500 transition" @click="doDeleteComment(r.id)">删除</button>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div class="text-sm text-slate-700 leading-relaxed">{{c.content}}</div>
-                        <button v-if="user?.role==='admin' || user?.id===c.userId" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition" @click="doDeleteComment(c.id)">
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
                       </div>
                       <div v-if="!comments.length" class="text-center py-10 text-slate-400 text-sm">暂无评论，快来抢沙发吧</div>
                     </div>
@@ -336,51 +401,41 @@
                   </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                  <table class="w-full text-left border-collapse">
-                    <thead>
-                      <tr class="bg-slate-50">
-                        <th class="px-6 py-4 text-sm font-bold text-slate-600 border-b border-slate-100">用户</th>
-                        <th class="px-6 py-4 text-sm font-bold text-slate-600 border-b border-slate-100">权限角色</th>
-                        <th class="px-6 py-4 text-sm font-bold text-slate-600 border-b border-slate-100">注册时间</th>
-                        <th class="px-6 py-4 text-sm font-bold text-slate-600 border-b border-slate-100 text-right">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                      <tr v-for="u in users" :key="u.id" class="hover:bg-slate-50/50 transition">
-                        <td class="px-6 py-4">
-                          <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold overflow-hidden">
-                              <img v-if="u.avatar" :src="imgUrl(u.avatar)" class="w-full h-full object-cover" />
-                              <span v-else>{{u.username.slice(0,1).toUpperCase()}}</span>
-                            </div>
-                            <div>
-                              <div class="font-bold text-slate-900">{{u.username}}</div>
-                              <div class="text-xs text-slate-400">ID: {{u.id}}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="px-6 py-4">
-                          <span class="px-3 py-1 rounded-full text-xs font-bold" :class="u.role==='admin' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-600'">
-                            {{u.role==='admin' ? '管理员' : '普通用户'}}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div v-for="u in users" :key="u.id" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition group">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-2xl overflow-hidden border-2 border-slate-50">
+                        <img v-if="u.avatar" :src="imgUrl(u.avatar)" class="w-full h-full object-cover" />
+                        <span v-else>{{u.username.slice(0,1).toUpperCase()}}</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-bold text-slate-900 text-lg truncate">{{u.username}}</div>
+                        <div class="text-xs text-slate-400">ID: {{u.id}}</div>
+                        <div class="mt-1 flex items-center gap-2">
+                          <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider" :class="u.role==='admin' ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'">
+                            {{u.role==='admin' ? 'Admin' : 'User'}}
                           </span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-500">
-                          {{new Date(u.createTime).toLocaleDateString()}}
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                          <div class="flex items-center justify-end gap-2">
-                            <button class="h-8 px-3 rounded-lg text-xs font-bold transition" :class="u.role==='admin' ? 'text-slate-600 bg-slate-100 hover:bg-slate-200' : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'" @click="doUpdateUserRole(u)">
-                              {{u.role==='admin' ? '设为用户' : '设为管理员'}}
-                            </button>
-                            <button class="h-8 px-3 rounded-lg text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition" @click="doDeleteUser(u.id)">
-                              删除
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="space-y-3 pt-4 border-t border-slate-50">
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-400">注册于</span>
+                        <span class="text-slate-600 font-medium">{{new Date(u.createTime).toLocaleDateString()}}</span>
+                      </div>
+                    </div>
+
+                    <div class="mt-6 flex items-center gap-2">
+                      <button class="flex-1 h-10 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2" :class="u.role==='admin' ? 'text-slate-600 bg-slate-100 hover:bg-slate-200' : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'" @click="doUpdateUserRole(u)">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        {{u.role==='admin' ? '降级为用户' : '提升为管理员'}}
+                      </button>
+                      <button class="w-10 h-10 rounded-xl text-red-600 bg-red-50 hover:bg-red-100 transition flex items-center justify-center" @click="doDeleteUser(u.id)" title="删除用户">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -421,9 +476,9 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { 
   currentUser, getBuildingDetail, getBuildingImages, getBuildingList, login, logout, register, 
   replaceBuildingImages, updateBuilding, uploadFile, uploadFilesBatch,
-  getComments, addComment, deleteComment,
+  getComments, addComment, deleteComment, likeComment,
   toggleFavorite, getFavoriteStatus, getMyFavoriteIds,
-  getUserList, adminUpdateUser, adminDeleteUser, updateProfile
+  getUserList, adminUpdateUser, adminDeleteUser, updateProfile, getCategories
 } from './api/http'
 
 const mapUrl='/api/images/main.jpg', MW=1024, MH=722
@@ -434,6 +489,9 @@ const buildings=ref([]), keyword=ref(''), ak=ref(''), showFavoritesOnly=ref(fals
 const adminTab=ref('building'), users=ref([])
 const active=ref(null), viewerImages=ref([]), idx=ref(0)
 const comments=ref([]), isFavorited=ref(false), commentInput=ref('')
+const categories=ref([]), selectedCategory=ref('')
+const showCatDropdown=ref(false)
+const replyTo=ref(null)
 const form=reactive({id:null,name:'',category:'',description:'',detail:'',coverImage:'',mapX:0,mapY:0})
 const imageDrafts=ref([]), dirty=ref(false)
 const showPreview=ref(false), previewUrl=ref('')
@@ -495,6 +553,7 @@ const filtered=computed(()=>{
   let res = buildings.value
   if(keyword.value) res = res.filter(b=>(b.name||'').includes(keyword.value))
   if(showFavoritesOnly.value) res = res.filter(b=>favoriteIds.value.includes(b.id))
+  if(selectedCategory.value) res = res.filter(b=>b.category===selectedCategory.value)
   return res
 })
 const adminFiltered=computed(()=>!ak.value?buildings.value:buildings.value.filter(b=>(b.name||'').includes(ak.value)))
@@ -502,9 +561,10 @@ const setSpread=()=>{markerSpread.value=false;setTimeout(()=>markerSpread.value=
 watch(filtered,()=>setSpread())
 
 const load=async()=>{
-  const [r, f]=await Promise.all([getBuildingList(), getMyFavoriteIds()])
+  const [r, f, c]=await Promise.all([getBuildingList(), getMyFavoriteIds(), getCategories()])
   buildings.value=Array.isArray(r.data?.data)?r.data.data:[]
   favoriteIds.value=f.data?.data||[]
+  categories.value=c.data?.data||[]
 }
 const assign=d=>Object.assign(form,{id:d.id??null,name:d.name??'',category:d.category??'',description:d.description??'',detail:d.detail??'',coverImage:d.coverImage??'',mapX:d.mapX??0,mapY:d.mapY??0})
 
@@ -572,19 +632,42 @@ const doToggleFavorite=async()=>{
 
 const doAddComment=async()=>{
   if(!commentInput.value.trim()) return
-  const r=await addComment({buildingId:active.value.id,content:commentInput.value})
+  const r=await addComment({
+    buildingId:active.value.id,
+    content:commentInput.value,
+    parentId: replyTo.value ? replyTo.value.id : null
+  })
   if(r.data?.code===200){
     commentInput.value=''
+    replyTo.value=null
     const res=await getComments(active.value.id)
     comments.value=res.data?.data||[]
     tip('发表成功')
   }
 }
 
+const doLikeComment=async(c)=>{
+  const r=await likeComment(c.id)
+  if(r.data?.code===200){
+    const newLikedStatus = r.data.data // 后端返回的是否已点赞的布尔值
+    c.isLiked = newLikedStatus
+    if(newLikedStatus) {
+      c.likes = (c.likes || 0) + 1
+      tip('点赞成功')
+    } else {
+      c.likes = Math.max(0, (c.likes || 0) - 1)
+      tip('已取消点赞')
+    }
+  }
+}
+
 const doDeleteComment=async(id)=>{
+  if(!confirm('确定要删除这条评论吗？')) return
   const r=await deleteComment(id)
   if(r.data?.code===200){
-    comments.value=comments.value.filter(c=>c.id!==id)
+    // 重新加载评论以反映树状结构的删除
+    const res=await getComments(active.value.id)
+    comments.value=res.data?.data||[]
     tip('删除成功')
   }
 }
